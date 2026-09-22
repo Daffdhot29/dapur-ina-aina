@@ -1,3 +1,4 @@
+
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
@@ -5,13 +6,16 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.renameColumn('role', 'role_user')
+      table
+        .enum('role_user', ['admin', 'kasir'])
+        .notNullable()
+        .defaultTo('kasir')
     })
   }
 
   async down() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.renameColumn('role_user', 'role')
+      table.dropColumn('role_user')
     })
   }
 }

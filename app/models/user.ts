@@ -10,5 +10,12 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
       return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
     }
     return `${first.slice(0, 2)}`.toUpperCase()
+   }
+   get isAdmin(): boolean {
+    return this.roleUser === 'admin'
+  }
+
+  get isKasir(): boolean {
+    return this.roleUser === 'kasir'
   }
 }
