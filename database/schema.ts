@@ -7,6 +7,140 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class BillingSchema extends BaseModel {
+  static $columns = ['idBilling', 'idPesanan', 'jumlah', 'tanggalCetak'] as const
+  $columns = BillingSchema.$columns
+  @column({ isPrimary: true })
+  declare idBilling: string
+  @column()
+  declare idPesanan: string
+  @column()
+  declare jumlah: number
+  @column.dateTime()
+  declare tanggalCetak: DateTime
+}
+
+export class DetailPesananSchema extends BaseModel {
+  static $columns = ['harga', 'idDetail', 'idMenu', 'idPesanan', 'jumlah', 'subTotal'] as const
+  $columns = DetailPesananSchema.$columns
+  @column()
+  declare harga: number
+  @column({ isPrimary: true })
+  declare idDetail: string
+  @column()
+  declare idMenu: string
+  @column()
+  declare idPesanan: string
+  @column()
+  declare jumlah: number
+  @column()
+  declare subTotal: number
+}
+
+export class KategorisSchema extends BaseModel {
+  static $columns = ['createdAt', 'idKategori', 'namaKategori', 'updatedAt'] as const
+  $columns = KategorisSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare idKategori: string
+  @column()
+  declare namaKategori: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class LaporanPenjualanSchema extends BaseModel {
+  static $columns = ['idLaporan', 'periodeMulai', 'periodeSelesai', 'totalPendapatan', 'totalTransaksi'] as const
+  $columns = LaporanPenjualanSchema.$columns
+  @column({ isPrimary: true })
+  declare idLaporan: string
+  @column.date()
+  declare periodeMulai: DateTime
+  @column.date()
+  declare periodeSelesai: DateTime
+  @column()
+  declare totalPendapatan: number
+  @column()
+  declare totalTransaksi: number
+}
+
+export class MenuSchema extends BaseModel {
+  static $columns = ['createdAt', 'deskripsi', 'harga', 'idKategori', 'idMenu', 'namaMenu', 'stok', 'updatedAt'] as const
+  $columns = MenuSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare deskripsi: string | null
+  @column()
+  declare harga: number
+  @column()
+  declare idKategori: string
+  @column({ isPrimary: true })
+  declare idMenu: string
+  @column()
+  declare namaMenu: string
+  @column()
+  declare stok: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class PelangganSchema extends BaseModel {
+  static $columns = ['alamat', 'createdAt', 'email', 'idPelanggan', 'nama', 'nomorHp', 'updatedAt'] as const
+  $columns = PelangganSchema.$columns
+  @column()
+  declare alamat: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string | null
+  @column({ isPrimary: true })
+  declare idPelanggan: string
+  @column()
+  declare nama: string
+  @column()
+  declare nomorHp: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class PembayaranSchema extends BaseModel {
+  static $columns = ['idPembayaran', 'idPesanan', 'jumlah', 'metodePembayaran', 'waktuPembayaran'] as const
+  $columns = PembayaranSchema.$columns
+  @column({ isPrimary: true })
+  declare idPembayaran: string
+  @column()
+  declare idPesanan: string
+  @column()
+  declare jumlah: number
+  @column()
+  declare metodePembayaran: string
+  @column.dateTime()
+  declare waktuPembayaran: DateTime
+}
+
+export class PesananSchema extends BaseModel {
+  static $columns = ['catatan', 'createdAt', 'idPelanggan', 'idPesanan', 'tanggalPesanan', 'totalHarga', 'totalPesanan', 'updatedAt'] as const
+  $columns = PesananSchema.$columns
+  @column()
+  declare catatan: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare idPelanggan: string
+  @column({ isPrimary: true })
+  declare idPesanan: string
+  @column.dateTime()
+  declare tanggalPesanan: DateTime
+  @column()
+  declare totalHarga: number
+  @column()
+  declare totalPesanan: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class UserSchema extends BaseModel {
   static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
   $columns = UserSchema.$columns
