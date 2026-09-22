@@ -9,6 +9,8 @@ import Kategori from '#models/kategori'
 import DetailPesanan from '#models/detail_pesanan'
 
 export default class Menu extends MenuSchema {
+
+    static table = "menu"
   @belongsTo(() => Kategori, {
     foreignKey: 'idKategori',
     localKey: 'idKategori',

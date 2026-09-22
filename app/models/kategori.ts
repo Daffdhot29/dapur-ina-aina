@@ -4,6 +4,8 @@ import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Menu from '#models/menu'
 
 export default class Kategori extends KategorisSchema {
+
+    static table = "kategoris"
   @hasMany(() => Menu, {
     foreignKey: 'idKategori',
     localKey: 'idKategori',

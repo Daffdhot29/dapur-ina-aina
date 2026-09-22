@@ -11,7 +11,7 @@ export default class extends BaseSchema {
         .uuid('id_kategori')
         .notNullable()
         .references('id_kategori')
-        .inTable('kategori')
+        .inTable('kategoris')
         .onDelete('RESTRICT')
 
       table.string('nama_menu', 20).notNullable()
