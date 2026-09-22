@@ -1,7 +1,12 @@
 
 import type { HttpContext } from '@adonisjs/core/http'
 import { randomUUID } from 'node:crypto'
+
 import Kategori from '#models/kategori'
+import {
+  createKategoriValidator,
+  updateKategoriValidator,
+} from '#validators/kategori'
 
 export default class KategorisController {
   async index({ response }: HttpContext) {
@@ -9,37 +14,37 @@ export default class KategorisController {
       .orderBy('nama_kategori', 'asc')
 
     return response.ok({
-      message: 'Daftar kategori berhasil diambil',
       data: kategoris,
     })
   }
 
-  
   async show({ params, response }: HttpContext) {
     const kategori = await Kategori.findOrFail(params.id)
 
     return response.ok({
-      message: 'Detail kategori berhasil diambil',
       data: kategori,
     })
   }
 
-  
   async store({ request, response }: HttpContext) {
-    const namaKategori = request.input('namaKategori')
+    const payload = await request.validateUsing(
+      createKategoriValidator
+    )
 
-    if (
-      typeof namaKategori !== 'string' ||
-      !namaKategori.trim()
-    ) {
-      return response.badRequest({
-        message: 'Nama kategori wajib diisi',
+    const existing = await Kategori.findBy(
+      'namaKategori',
+      payload.namaKategori
+    )
+
+    if (existing) {
+      return response.conflict({
+        message: 'Nama kategori sudah digunakan',
       })
     }
 
     const kategori = await Kategori.create({
       idKategori: randomUUID(),
-      namaKategori: namaKategori.trim(),
+      namaKategori: payload.namaKategori,
     })
 
     return response.created({
@@ -48,21 +53,25 @@ export default class KategorisController {
     })
   }
 
-  
   async update({ params, request, response }: HttpContext) {
     const kategori = await Kategori.findOrFail(params.id)
-    const namaKategori = request.input('namaKategori')
 
-    if (
-      typeof namaKategori !== 'string' ||
-      !namaKategori.trim()
-    ) {
-      return response.badRequest({
-        message: 'Nama kategori wajib diisi',
+    const payload = await request.validateUsing(
+      updateKategoriValidator
+    )
+
+    const existing = await Kategori.query()
+      .where('nama_kategori', payload.namaKategori)
+      .whereNot('id_kategori', kategori.idKategori)
+      .first()
+
+    if (existing) {
+      return response.conflict({
+        message: 'Nama kategori sudah digunakan',
       })
     }
 
-    kategori.namaKategori = namaKategori.trim()
+    kategori.merge(payload)
 
     await kategori.save()
 
@@ -75,15 +84,14 @@ export default class KategorisController {
   async destroy({ params, response }: HttpContext) {
     const kategori = await Kategori.findOrFail(params.id)
 
-    const jumlahMenu = await kategori
+    const menu = await kategori
       .related('menus')
       .query()
-      .count('* as total')
+      .first()
 
-    if (Number(jumlahMenu[0].$extras.total) > 0) {
+    if (menu) {
       return response.conflict({
-        message:
-          'Kategori tidak dapat dihapus karena masih memiliki menu',
+        message: 'Kategori masih memiliki menu',
       })
     }
 
