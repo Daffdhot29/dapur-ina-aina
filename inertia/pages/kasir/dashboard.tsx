@@ -1,10 +1,13 @@
-import {
-  useState,
-} from 'react'
+import { router } from '@inertiajs/react'
+import { useState } from 'react'
+
 import KasirDashboard from '../../components/kasir/KasirDashboard'
 import PelangganManagement from '../../components/kasir/PelangganManagement'
+import PesananManagement from '../../components/kasir/PesananManagement'
+import PembayaranManagement from '../../components/kasir/PembayaranManagement'
+import BillingManagement from '../../components/kasir/BillingManagement'
 
-type MenuKey =
+type Page =
   | 'dashboard'
   | 'pelanggan'
   | 'pesanan'
@@ -12,504 +15,430 @@ type MenuKey =
   | 'billing'
 
 const navigation: {
-  key: MenuKey
+  id: Page
   label: string
+  icon: string
 }[] = [
   {
-    key: 'dashboard',
+    id: 'dashboard',
     label: 'Dashboard',
+    icon: '⌂',
   },
   {
-    key: 'pelanggan',
+    id: 'pelanggan',
     label: 'Pelanggan',
+    icon: '♙',
   },
   {
-    key: 'pesanan',
+    id: 'pesanan',
     label: 'Pesanan',
+    icon: '▤',
   },
   {
-    key: 'pembayaran',
+    id: 'pembayaran',
     label: 'Pembayaran',
+    icon: '□',
   },
   {
-    key: 'billing',
+    id: 'billing',
     label: 'Billing',
+    icon: '▥',
   },
 ]
 
-const pageInfo: Record<
-  MenuKey,
-  {
-    title: string
-    subtitle: string
-  }
-> = {
-  dashboard: {
-    title: 'Dashboard',
-    subtitle:
-      'Ringkasan aktivitas kasir Dapur Ina Aina.',
-  },
-
-  pelanggan: {
-    title: 'Pelanggan',
-    subtitle:
-      'Kelola data pelanggan restoran.',
-  },
-
-  pesanan: {
-    title: 'Pesanan',
-    subtitle:
-      'Buat dan kelola pesanan pelanggan.',
-  },
-
-  pembayaran: {
-    title: 'Pembayaran',
-    subtitle:
-      'Proses pembayaran pesanan.',
-  },
-
-  billing: {
-    title: 'Billing',
-    subtitle:
-      'Lihat dan cetak billing pelanggan.',
-  },
+const colors = {
+  sidebar: '#1F2729',
+  sidebarActive: '#594743',
+  sidebarText: '#E4E7E7',
+  text: '#202426',
+  muted: '#686E70',
+  background: '#F6F6F4',
+  white: '#FFFFFF',
+  border: '#E0E2DF',
 }
 
-export default function KasirPage() {
-  const [activeMenu, setActiveMenu] =
-    useState<MenuKey>('dashboard')
+export default function KasirDashboardPage() {
+  const [activePage, setActivePage] =
+    useState<Page>('dashboard')
 
-  const currentPage =
-    pageInfo[activeMenu]
+  const titles: Record<Page, string> = {
+    dashboard: 'Dashboard',
+    pelanggan: 'Pelanggan',
+    pesanan: 'Pesanan',
+    pembayaran: 'Pembayaran',
+    billing: 'Billing',
+  }
+
+  const descriptions: Record<Page, string> = {
+    dashboard:
+      'Ringkasan aktivitas operasional kasir.',
+
+    pelanggan:
+      'Kelola data pelanggan restoran.',
+
+    pesanan:
+      'Buat dan kelola pesanan pelanggan.',
+
+    pembayaran:
+      'Proses pembayaran pesanan pelanggan.',
+
+    billing:
+      'Lihat dan cetak billing pelanggan.',
+  }
+
+  function navigate(page: Page) {
+    setActivePage(page)
+  }
+
+  function handleLogout() {
+    router.post('/logout')
+  }
 
   function renderContent() {
-    switch (activeMenu) {
-      case 'dashboard':
-        return <KasirDashboard />
+  switch (activePage) {
+    case 'dashboard':
+      return <KasirDashboard />
 
-      case 'pelanggan':
-        return (
-          <PelangganManagement />
-        )
+    case 'pelanggan':
+      return <PelangganManagement />
 
-      case 'pesanan':
-        return (
-          <ComingSoon
-            title="Pesanan"
-            description="Fitur pesanan akan dikerjakan setelah pelanggan."
-          />
-        )
+    case 'pesanan':
+      return <PesananManagement />
 
-      case 'pembayaran':
-        return (
-          <ComingSoon
-            title="Pembayaran"
-            description="Fitur pembayaran akan dikerjakan setelah pesanan."
-          />
-        )
+    case 'pembayaran':
+      return <PembayaranManagement />
 
-      case 'billing':
-        return (
-          <ComingSoon
-            title="Billing"
-            description="Fitur billing akan dikerjakan setelah pembayaran."
-          />
-        )
-    }
+    case 'billing':
+      return <BillingManagement />
+
+    default:
+      return <KasirDashboard />
   }
+}
 
   return (
     <div
       style={{
         minHeight: '100vh',
-
-        background:
-          '#F6F6F4',
-
+        width: '100%',
+        background: colors.background,
+        color: colors.text,
         fontFamily:
-          'Arial, sans-serif',
-
-        color:
-          '#202426',
+          'Arial, Helvetica, sans-serif',
       }}
     >
-      {/* SIDEBAR */}
-
-      <aside
-        style={{
-          position:
-            'fixed',
-
-          top: 0,
-          left: 0,
-          bottom: 0,
-
-          width: 230,
-
-          background:
-            '#1F2729',
-
-          color:
-            '#FFFFFF',
-
-          zIndex: 20,
-        }}
-      >
-        <div
-          style={{
-            height: 64,
-
-            display: 'flex',
-
-            alignItems:
-              'center',
-
-            padding:
-              '0 22px',
-
-            borderBottom:
-              '1px solid rgba(255,255,255,0.08)',
-
-            boxSizing:
-              'border-box',
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 16,
-
-                fontWeight: 800,
-              }}
-            >
-              Dapur Ina Aina
-            </div>
-
-            <div
-              style={{
-                marginTop: 3,
-
-                fontSize: 11,
-
-                color:
-                  'rgba(255,255,255,0.55)',
-              }}
-            >
-              Kasir
-            </div>
-          </div>
-        </div>
-
-        <nav
-          style={{
-            padding:
-              '18px 12px',
-          }}
-        >
-          {navigation.map(
-            (item) => {
-              const active =
-                activeMenu ===
-                item.key
-
-              return (
-                <button
-                  key={
-                    item.key
-                  }
-
-                  type="button"
-
-                  onClick={() =>
-                    setActiveMenu(
-                      item.key
-                    )
-                  }
-
-                  style={{
-                    width:
-                      '100%',
-
-                    height: 43,
-
-                    padding:
-                      '0 14px',
-
-                    marginBottom:
-                      5,
-
-                    border:
-                      'none',
-
-                    borderRadius:
-                      5,
-
-                    background:
-                      active
-                        ? '#594743'
-                        : 'transparent',
-
-                    color:
-                      active
-                        ? '#FFFFFF'
-                        : 'rgba(255,255,255,0.72)',
-
-                    textAlign:
-                      'left',
-
-                    fontSize:
-                      13,
-
-                    fontWeight:
-                      active
-                        ? 700
-                        : 500,
-
-                    cursor:
-                      'pointer',
-
-                    boxSizing:
-                      'border-box',
-                  }}
-                >
-                  {
-                    item.label
-                  }
-                </button>
-              )
-            }
-          )}
-        </nav>
-      </aside>
-
-      {/* CONTENT */}
-
       <div
         style={{
-          marginLeft: 230,
-
-          minHeight:
-            '100vh',
+          display: 'flex',
+          width: '100%',
+          minHeight: '100vh',
         }}
       >
-        {/* TOPBAR */}
-
-        <header
+        <aside
           style={{
-            height: 64,
-
-            background:
-              '#FFFFFF',
-
-            borderBottom:
-              '1px solid #E0E2DF',
-
+            width: 230,
+            flex: '0 0 230px',
+            minHeight: '100vh',
+            background: colors.sidebar,
+            color: colors.sidebarText,
             display: 'flex',
-
-            alignItems:
-              'center',
-
-            justifyContent:
-              'flex-end',
-
-            padding:
-              '0 32px',
-
-            boxSizing:
-              'border-box',
+            flexDirection: 'column',
           }}
         >
           <div
             style={{
+              height: 64,
+              padding: '0 20px',
               display: 'flex',
-
-              alignItems:
-                'center',
-
-              gap: 10,
+              alignItems: 'center',
+              gap: 11,
+              borderBottom:
+                '1px solid rgba(255,255,255,0.08)',
+              boxSizing: 'border-box',
             }}
           >
             <div
               style={{
                 width: 34,
-
                 height: 34,
-
-                borderRadius:
-                  '50%',
-
-                background:
-                  '#513934',
-
-                color:
-                  '#FFFFFF',
-
-                display:
-                  'flex',
-
-                alignItems:
-                  'center',
-
-                justifyContent:
-                  'center',
-
-                fontSize:
-                  12,
-
-                fontWeight:
-                  800,
+                flexShrink: 0,
+                borderRadius: '50%',
+                background: '#F0F0EC',
+                color: colors.sidebar,
+                display: 'grid',
+                placeItems: 'center',
+                fontSize: 15,
+                fontWeight: 900,
               }}
             >
-              KS
+              D
             </div>
 
             <div>
-              <div
+              <strong
                 style={{
-                  fontSize:
-                    13,
+                  display: 'block',
+                  color: colors.white,
+                  fontSize: 15,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Dapur Ina Aina
+              </strong>
 
-                  fontWeight:
-                    700,
-
+              <span
+                style={{
+                  display: 'block',
+                  marginTop: 3,
                   color:
-                    '#202426',
+                    'rgba(255,255,255,0.5)',
+                  fontSize: 11,
                 }}
               >
                 Kasir
-              </div>
-
-              <div
-                style={{
-                  marginTop:
-                    2,
-
-                  fontSize:
-                    11,
-
-                  color:
-                    '#686E70',
-                }}
-              >
-                Kasir
-              </div>
+              </span>
             </div>
           </div>
-        </header>
 
-        {/* PAGE */}
+          <nav
+            aria-label="Navigasi kasir"
+            style={{
+              padding: '18px 10px',
+              display: 'grid',
+              gap: 5,
+            }}
+          >
+            {navigation.map((item) => {
+              const active =
+                activePage === item.id
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() =>
+                    navigate(item.id)
+                  }
+                  style={{
+                    width: '100%',
+                    height: 48,
+                    padding: '0 14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+
+                    background: active
+                      ? colors.sidebarActive
+                      : 'transparent',
+
+                    color: active
+                      ? colors.white
+                      : colors.sidebarText,
+
+                    border: 'none',
+                    borderRadius: 5,
+                    fontSize: 14,
+
+                    fontWeight: active
+                      ? 700
+                      : 500,
+
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 20,
+                      flexShrink: 0,
+                      textAlign: 'center',
+                      fontSize: 16,
+                    }}
+                  >
+                    {item.icon}
+                  </span>
+
+                  <span>
+                    {item.label}
+                  </span>
+                </button>
+              )
+            })}
+          </nav>
+
+          <div
+            style={{
+              marginTop: 'auto',
+              padding: 10,
+              borderTop:
+                '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                width: '100%',
+                height: 46,
+                padding: '0 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                background: 'transparent',
+                color: colors.sidebarText,
+                border: 'none',
+                borderRadius: 5,
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: 'pointer',
+                textAlign: 'left',
+                boxSizing: 'border-box',
+              }}
+              onMouseEnter={(event) => {
+                event.currentTarget.style.background =
+                  'rgba(255,255,255,0.08)'
+
+                event.currentTarget.style.color =
+                  '#FFFFFF'
+              }}
+              onMouseLeave={(event) => {
+                event.currentTarget.style.background =
+                  'transparent'
+
+                event.currentTarget.style.color =
+                  colors.sidebarText
+              }}
+            >
+              <span
+                style={{
+                  width: 20,
+                  textAlign: 'center',
+                  fontSize: 16,
+                }}
+              >
+                ↪
+              </span>
+
+              <span>Keluar</span>
+            </button>
+          </div>
+        </aside>
 
         <main
           style={{
-            padding:
-              '28px 32px 40px',
+            flex: '1 1 auto',
+            width: 0,
+            minWidth: 0,
+            minHeight: '100vh',
+            background: colors.background,
           }}
         >
-          <div
+          <header
             style={{
-              marginBottom:
-                24,
+              width: '100%',
+              height: 64,
+              background: colors.white,
+              borderBottom:
+                `1px solid ${colors.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 32px',
+              boxSizing: 'border-box',
             }}
           >
-            <h1
+            <div
               style={{
-                margin: 0,
-
-                color:
-                  '#202426',
-
-                fontSize:
-                  24,
-
-                fontWeight:
-                  800,
+                marginLeft: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
               }}
             >
-              {
-                currentPage.title
-              }
-            </h1>
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  flexShrink: 0,
+                  borderRadius: '50%',
+                  background: '#ECECE8',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: colors.text,
+                  fontSize: 12,
+                  fontWeight: 800,
+                }}
+              >
+                KS
+              </div>
 
-            <p
+              <div>
+                <div
+                  style={{
+                    color: colors.text,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Kasir
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 2,
+                    color: colors.muted,
+                    fontSize: 11,
+                  }}
+                >
+                  Kasir
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div
+            style={{
+              width: '100%',
+              padding: '28px 32px 40px',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div
               style={{
-                margin:
-                  '7px 0 0',
-
-                color:
-                  '#686E70',
-
-                fontSize:
-                  13,
+                marginBottom: 24,
               }}
             >
-              {
-                currentPage.subtitle
-              }
-            </p>
+              <h1
+                style={{
+                  margin: 0,
+                  color: colors.text,
+                  fontSize: 28,
+                  fontWeight: 800,
+                  lineHeight: 1.25,
+                  letterSpacing: '-0.4px',
+                }}
+              >
+                {titles[activePage]}
+              </h1>
+
+              <p
+                style={{
+                  margin: '6px 0 0',
+                  color: colors.muted,
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                }}
+              >
+                {descriptions[activePage]}
+              </p>
+            </div>
+
+            {renderContent()}
           </div>
-
-          {renderContent()}
         </main>
       </div>
     </div>
   )
 }
 
-function ComingSoon({
-  title,
-  description,
-}: {
-  title: string
-  description: string
-}) {
-  return (
-    <div
-      style={{
-        background:
-          '#FFFFFF',
-
-        border:
-          '1px solid #E0E2DF',
-
-        borderRadius:
-          7,
-
-        padding:
-          30,
-
-        textAlign:
-          'center',
-      }}
-    >
-      <div
-        style={{
-          color:
-            '#202426',
-
-          fontSize:
-            16,
-
-          fontWeight:
-            800,
-
-          marginBottom:
-            8,
-        }}
-      >
-        {title}
-      </div>
-
-      <div
-        style={{
-          color:
-            '#686E70',
-
-          fontSize:
-            13,
-        }}
-      >
-        {description}
-      </div>
-    </div>
-  )
-}

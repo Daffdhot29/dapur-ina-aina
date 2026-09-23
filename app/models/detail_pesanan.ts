@@ -6,6 +6,7 @@ import Pesanan from '#models/pesanan'
 import Menu from '#models/menu'
 
 export default class DetailPesanan extends DetailPesananSchema {
+  static table = 'detail_pesanan'
   @belongsTo(() => Pesanan, {
     foreignKey: 'idPesanan',
     localKey: 'idPesanan',

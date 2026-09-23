@@ -1,9 +1,12 @@
 import {
-  FormEvent,
+  type FormEvent,
+  type ReactNode,
   useEffect,
   useMemo,
   useState,
 } from 'react'
+
+import { apiFetch } from '~/lib/api'
 
 type Pelanggan = {
   idPelanggan: string
@@ -37,25 +40,13 @@ const colors = {
 }
 
 export default function PelangganManagement() {
-  const [pelanggans, setPelanggans] =
-    useState<Pelanggan[]>([])
-
+  const [pelanggans, setPelanggans] = useState<Pelanggan[]>([])
   const [search, setSearch] = useState('')
-
-  const [loading, setLoading] =
-    useState(true)
-
-  const [saving, setSaving] =
-    useState(false)
-
-  const [error, setError] =
-    useState('')
-
-  const [modalOpen, setModalOpen] =
-    useState(false)
-
-  const [editing, setEditing] =
-    useState<Pelanggan | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState<Pelanggan | null>(null)
 
   const [form, setForm] =
     useState<PelangganForm>(emptyForm)
@@ -69,26 +60,15 @@ export default function PelangganManagement() {
       setLoading(true)
       setError('')
 
-      const response = await fetch(
-        '/api/pelanggans',
-        {
-          headers: {
-            Accept: 'application/json',
-          },
-        }
-      )
+      const response = await apiFetch('/api/pelanggans')
 
       if (!response.ok) {
-        throw new Error(
-          'Gagal mengambil data pelanggan.'
-        )
+        throw new Error('Gagal mengambil data pelanggan.')
       }
 
-      const result =
-        await response.json()
+      const result = await response.json()
 
-      const source =
-        result.data ?? result
+      const source = result.data ?? result
 
       setPelanggans(
         Array.isArray(source)
@@ -113,19 +93,14 @@ export default function PelangganManagement() {
     setModalOpen(true)
   }
 
-  function openEdit(
-    pelanggan: Pelanggan
-  ) {
+  function openEdit(pelanggan: Pelanggan) {
     setEditing(pelanggan)
 
     setForm({
       nama: pelanggan.nama,
-      email:
-        pelanggan.email ?? '',
-      nomorHp:
-        pelanggan.nomorHp ?? '',
-      alamat:
-        pelanggan.alamat ?? '',
+      email: pelanggan.email ?? '',
+      nomorHp: pelanggan.nomorHp ?? '',
+      alamat: pelanggan.alamat ?? '',
     })
 
     setError('')
@@ -148,9 +123,7 @@ export default function PelangganManagement() {
     event.preventDefault()
 
     if (!form.nama.trim()) {
-      setError(
-        'Nama pelanggan wajib diisi.'
-      )
+      setError('Nama pelanggan wajib diisi.')
       return
     }
 
@@ -166,17 +139,10 @@ export default function PelangganManagement() {
         ? 'PUT'
         : 'POST'
 
-      const response = await fetch(
+      const response = await apiFetch(
         url,
         {
           method,
-
-          headers: {
-            'Content-Type':
-              'application/json',
-            Accept:
-              'application/json',
-          },
 
           body: JSON.stringify({
             nama: form.nama.trim(),
@@ -197,10 +163,9 @@ export default function PelangganManagement() {
       )
 
       if (!response.ok) {
-        const result =
-          await response
-            .json()
-            .catch(() => null)
+        const result = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
           result?.message ??
@@ -208,7 +173,9 @@ export default function PelangganManagement() {
         )
       }
 
-      closeModal()
+      setModalOpen(false)
+      setEditing(null)
+      setForm(emptyForm)
 
       await loadPelanggans()
     } catch (err) {
@@ -225,10 +192,9 @@ export default function PelangganManagement() {
   async function deletePelanggan(
     pelanggan: Pelanggan
   ) {
-    const confirmed =
-      window.confirm(
-        `Hapus pelanggan "${pelanggan.nama}"?`
-      )
+    const confirmed = window.confirm(
+      `Hapus pelanggan "${pelanggan.nama}"?`
+    )
 
     if (!confirmed) {
       return
@@ -237,23 +203,17 @@ export default function PelangganManagement() {
     try {
       setError('')
 
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/pelanggans/${pelanggan.idPelanggan}`,
         {
           method: 'DELETE',
-
-          headers: {
-            Accept:
-              'application/json',
-          },
         }
       )
 
       if (!response.ok) {
-        const result =
-          await response
-            .json()
-            .catch(() => null)
+        const result = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
           result?.message ??
@@ -273,10 +233,9 @@ export default function PelangganManagement() {
 
   const filteredPelanggans =
     useMemo(() => {
-      const keyword =
-        search
-          .trim()
-          .toLowerCase()
+      const keyword = search
+        .trim()
+        .toLowerCase()
 
       if (!keyword) {
         return pelanggans
@@ -305,51 +264,30 @@ export default function PelangganManagement() {
     <>
       <section
         style={{
-          background:
-            colors.white,
-
-          border:
-            `1px solid ${colors.border}`,
-
+          background: colors.white,
+          border: `1px solid ${colors.border}`,
           borderRadius: 7,
-
           overflow: 'hidden',
         }}
       >
         <div
           style={{
             minHeight: 70,
-
-            padding:
-              '14px 20px',
-
+            padding: '14px 20px',
             display: 'flex',
-
-            alignItems:
-              'center',
-
-            justifyContent:
-              'space-between',
-
+            alignItems: 'center',
+            justifyContent: 'space-between',
             gap: 16,
-
-            borderBottom:
-              `1px solid ${colors.border}`,
-
-            boxSizing:
-              'border-box',
+            borderBottom: `1px solid ${colors.border}`,
+            boxSizing: 'border-box',
           }}
         >
           <div>
             <div
               style={{
-                color:
-                  colors.text,
-
+                color: colors.text,
                 fontSize: 15,
-
                 fontWeight: 800,
-
                 marginBottom: 4,
               }}
             >
@@ -358,14 +296,11 @@ export default function PelangganManagement() {
 
             <div
               style={{
-                color:
-                  colors.muted,
-
+                color: colors.muted,
                 fontSize: 12,
               }}
             >
-              Kelola data pelanggan
-              restoran.
+              Kelola data pelanggan restoran.
             </div>
           </div>
 
@@ -373,53 +308,32 @@ export default function PelangganManagement() {
             style={{
               display: 'flex',
               gap: 10,
-              alignItems:
-                'center',
+              alignItems: 'center',
             }}
           >
             <input
               type="search"
-
               placeholder="Cari pelanggan..."
-
               value={search}
-
               onChange={(event) =>
-                setSearch(
-                  event.target.value
-                )
+                setSearch(event.target.value)
               }
-
               style={{
                 width: 220,
-
                 height: 40,
-
-                padding:
-                  '0 12px',
-
-                border:
-                  `1px solid ${colors.border}`,
-
+                padding: '0 12px',
+                border: `1px solid ${colors.border}`,
                 borderRadius: 5,
-
                 outline: 'none',
-
                 fontSize: 13,
-
-                boxSizing:
-                  'border-box',
+                boxSizing: 'border-box',
               }}
             />
 
             <button
               type="button"
-
               onClick={openCreate}
-
-              style={
-                primaryButtonStyle
-              }
+              style={primaryButtonStyle}
             >
               + Tambah Pelanggan
             </button>
@@ -430,21 +344,11 @@ export default function PelangganManagement() {
           <div
             style={{
               margin: 20,
-
-              padding:
-                '12px 15px',
-
-              background:
-                '#FFF1F0',
-
-              border:
-                '1px solid #F0B8B4',
-
+              padding: '12px 15px',
+              background: '#FFF1F0',
+              border: '1px solid #F0B8B4',
               borderRadius: 5,
-
-              color:
-                '#B42318',
-
+              color: '#B42318',
               fontSize: 13,
             }}
           >
@@ -460,54 +364,31 @@ export default function PelangganManagement() {
           <table
             style={{
               width: '100%',
-
               minWidth: 800,
-
-              borderCollapse:
-                'collapse',
-
+              borderCollapse: 'collapse',
               fontSize: 13,
             }}
           >
             <thead>
               <tr
                 style={{
-                  background:
-                    colors.tableHeader,
-
-                  textAlign:
-                    'left',
+                  background: colors.tableHeader,
+                  textAlign: 'left',
                 }}
               >
-                <th
-                  style={
-                    tableHeaderStyle
-                  }
-                >
+                <th style={tableHeaderStyle}>
                   Nama
                 </th>
 
-                <th
-                  style={
-                    tableHeaderStyle
-                  }
-                >
+                <th style={tableHeaderStyle}>
                   Email
                 </th>
 
-                <th
-                  style={
-                    tableHeaderStyle
-                  }
-                >
+                <th style={tableHeaderStyle}>
                   Nomor HP
                 </th>
 
-                <th
-                  style={
-                    tableHeaderStyle
-                  }
-                >
+                <th style={tableHeaderStyle}>
                   Alamat
                 </th>
 
@@ -527,12 +408,9 @@ export default function PelangganManagement() {
                 <tr>
                   <td
                     colSpan={5}
-                    style={
-                      emptyStyle
-                    }
+                    style={emptyStyle}
                   >
-                    Memuat data
-                    pelanggan...
+                    Memuat data pelanggan...
                   </td>
                 </tr>
               ) : filteredPelanggans.length ===
@@ -540,85 +418,61 @@ export default function PelangganManagement() {
                 <tr>
                   <td
                     colSpan={5}
-                    style={
-                      emptyStyle
-                    }
+                    style={emptyStyle}
                   >
-                    Tidak ada data
-                    pelanggan.
+                    Tidak ada data pelanggan.
                   </td>
                 </tr>
               ) : (
                 filteredPelanggans.map(
-                  (
-                    pelanggan
-                  ) => (
+                  (pelanggan) => (
                     <tr
                       key={
                         pelanggan.idPelanggan
                       }
                     >
                       <td
-                        style={
-                          tableCellStyle
-                        }
+                        style={tableCellStyle}
                       >
                         <strong>
-                          {
-                            pelanggan.nama
-                          }
+                          {pelanggan.nama}
                         </strong>
                       </td>
 
                       <td
-                        style={
-                          tableCellStyle
-                        }
+                        style={tableCellStyle}
                       >
-                        {pelanggan.email ??
-                          '-'}
+                        {pelanggan.email ?? '-'}
                       </td>
 
                       <td
-                        style={
-                          tableCellStyle
-                        }
+                        style={tableCellStyle}
                       >
-                        {pelanggan.nomorHp ??
-                          '-'}
+                        {pelanggan.nomorHp ?? '-'}
                       </td>
 
                       <td
-                        style={
-                          tableCellStyle
-                        }
+                        style={tableCellStyle}
                       >
-                        {pelanggan.alamat ??
-                          '-'}
+                        {pelanggan.alamat ?? '-'}
                       </td>
 
                       <td
-                        style={
-                          tableCellStyle
-                        }
+                        style={tableCellStyle}
                       >
                         <div
                           style={{
-                            display:
-                              'flex',
-
+                            display: 'flex',
                             gap: 8,
                           }}
                         >
                           <button
                             type="button"
-
                             onClick={() =>
                               openEdit(
                                 pelanggan
                               )
                             }
-
                             style={
                               actionButtonStyle
                             }
@@ -628,18 +482,14 @@ export default function PelangganManagement() {
 
                           <button
                             type="button"
-
                             onClick={() =>
                               deletePelanggan(
                                 pelanggan
                               )
                             }
-
                             style={{
                               ...actionButtonStyle,
-
-                              color:
-                                '#B42318',
+                              color: '#B42318',
                             }}
                           >
                             Hapus
@@ -657,78 +507,47 @@ export default function PelangganManagement() {
 
       {modalOpen && (
         <div
-          onMouseDown={
-            closeModal
-          }
-
+          onMouseDown={closeModal}
           style={{
-            position:
-              'fixed',
-
+            position: 'fixed',
             inset: 0,
-
             background:
               'rgba(0,0,0,0.35)',
-
             display: 'flex',
-
-            alignItems:
-              'center',
-
-            justifyContent:
-              'center',
-
+            alignItems: 'center',
+            justifyContent: 'center',
             padding: 20,
-
             zIndex: 1000,
           }}
         >
           <div
-            onMouseDown={(
-              event
-            ) =>
+            onMouseDown={(event) =>
               event.stopPropagation()
             }
-
             style={{
               width: '100%',
-
               maxWidth: 500,
-
-              background:
-                colors.white,
-
+              background: colors.white,
               borderRadius: 8,
-
               boxShadow:
                 '0 20px 60px rgba(0,0,0,0.18)',
-
-              overflow:
-                'hidden',
+              overflow: 'hidden',
             }}
           >
             <div
               style={{
-                padding:
-                  '18px 20px',
-
+                padding: '18px 20px',
                 borderBottom:
                   `1px solid ${colors.border}`,
-
                 display: 'flex',
-
-                alignItems:
-                  'center',
-
+                alignItems: 'center',
                 justifyContent:
                   'space-between',
               }}
             >
               <strong
                 style={{
-                  color:
-                    colors.text,
-
+                  color: colors.text,
                   fontSize: 16,
                 }}
               >
@@ -739,28 +558,16 @@ export default function PelangganManagement() {
 
               <button
                 type="button"
-
-                onClick={
-                  closeModal
-                }
-
+                onClick={closeModal}
                 style={{
                   width: 32,
                   height: 32,
-
-                  border:
-                    'none',
-
+                  border: 'none',
                   background:
                     'transparent',
-
-                  cursor:
-                    'pointer',
-
+                  cursor: 'pointer',
                   fontSize: 20,
-
-                  color:
-                    colors.muted,
+                  color: colors.muted,
                 }}
               >
                 ×
@@ -768,141 +575,88 @@ export default function PelangganManagement() {
             </div>
 
             <form
-              onSubmit={
-                submitPelanggan
-              }
+              onSubmit={submitPelanggan}
             >
               <div
                 style={{
                   padding: 20,
-
-                  display:
-                    'grid',
-
+                  display: 'grid',
                   gap: 16,
                 }}
               >
                 <Field label="Nama Pelanggan *">
                   <input
                     type="text"
-
-                    value={
-                      form.nama
-                    }
-
-                    onChange={(
-                      event
-                    ) =>
+                    required
+                    value={form.nama}
+                    onChange={(event) =>
                       setForm({
                         ...form,
-
                         nama:
-                          event
-                            .target
+                          event.target
                             .value,
                       })
                     }
-
                     placeholder="Nama pelanggan"
-
-                    style={
-                      inputStyle
-                    }
+                    style={inputStyle}
                   />
                 </Field>
 
                 <Field label="Email">
                   <input
                     type="email"
-
-                    value={
-                      form.email
-                    }
-
-                    onChange={(
-                      event
-                    ) =>
+                    value={form.email}
+                    onChange={(event) =>
                       setForm({
                         ...form,
-
                         email:
-                          event
-                            .target
+                          event.target
                             .value,
                       })
                     }
-
                     placeholder="email@example.com"
-
-                    style={
-                      inputStyle
-                    }
+                    style={inputStyle}
                   />
                 </Field>
 
                 <Field label="Nomor HP">
                   <input
                     type="text"
-
-                    value={
-                      form.nomorHp
-                    }
-
-                    onChange={(
-                      event
-                    ) =>
+                    value={form.nomorHp}
+                    onChange={(event) =>
                       setForm({
                         ...form,
-
                         nomorHp:
-                          event
-                            .target
+                          event.target
                             .value,
                       })
                     }
-
                     placeholder="08xxxxxxxxxx"
-
-                    style={
-                      inputStyle
-                    }
+                    style={inputStyle}
                   />
                 </Field>
 
                 <Field label="Alamat">
                   <textarea
-                    value={
-                      form.alamat
-                    }
-
-                    onChange={(
-                      event
-                    ) =>
+                    value={form.alamat}
+                    onChange={(event) =>
                       setForm({
                         ...form,
-
                         alamat:
-                          event
-                            .target
+                          event.target
                             .value,
                       })
                     }
-
                     placeholder="Alamat pelanggan"
-
-                    rows={3}
-
+                    rows={4}
                     style={{
                       ...inputStyle,
-
-                      height:
-                        'auto',
-
+                      height: 95,
                       padding:
                         '10px 12px',
-
-                      resize:
-                        'vertical',
+                      resize: 'vertical',
+                      fontFamily:
+                        'inherit',
                     }}
                   />
                 </Field>
@@ -910,31 +664,19 @@ export default function PelangganManagement() {
 
               <div
                 style={{
-                  padding:
-                    '14px 20px',
-
+                  padding: '15px 20px',
                   borderTop:
                     `1px solid ${colors.border}`,
-
                   display: 'flex',
-
                   justifyContent:
                     'flex-end',
-
                   gap: 10,
                 }}
               >
                 <button
                   type="button"
-
-                  onClick={
-                    closeModal
-                  }
-
-                  disabled={
-                    saving
-                  }
-
+                  disabled={saving}
+                  onClick={closeModal}
                   style={
                     secondaryButtonStyle
                   }
@@ -944,19 +686,10 @@ export default function PelangganManagement() {
 
                 <button
                   type="submit"
-
-                  disabled={
-                    saving
+                  disabled={saving}
+                  style={
+                    primaryButtonStyle
                   }
-
-                  style={{
-                    ...primaryButtonStyle,
-
-                    opacity:
-                      saving
-                        ? 0.7
-                        : 1,
-                  }}
                 >
                   {saving
                     ? 'Menyimpan...'
@@ -978,19 +711,15 @@ function Field({
   children,
 }: {
   label: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <label
       style={{
         display: 'grid',
-
         gap: 7,
-
         color: '#202426',
-
         fontSize: 13,
-
         fontWeight: 700,
       }}
     >
@@ -1001,169 +730,82 @@ function Field({
   )
 }
 
-const inputStyle = {
-  width: '100%',
-
-  height: 42,
-
-  padding: '0 12px',
-
-  border:
-    '1px solid #D9DCDA',
-
-  borderRadius: 5,
-
-  background:
-    '#FFFFFF',
-
-  color: '#202426',
-
-  fontSize: 14,
-
-  outline: 'none',
-
-  boxSizing:
-    'border-box' as const,
-}
-
-const primaryButtonStyle = {
-  width: 'auto',
-
-  minWidth: 130,
-
-  height: 40,
-
-  padding:
-    '0 16px',
-
-  border: 'none',
-
-  borderRadius: 5,
-
-  background:
-    '#513934',
-
-  color: '#FFFFFF',
-
-  fontSize: 13,
-
-  fontWeight: 700,
-
-  cursor:
-    'pointer',
-
-  display:
-    'inline-flex',
-
-  alignItems:
-    'center',
-
-  justifyContent:
-    'center',
-
-  flex: 'none',
-}
-
-const secondaryButtonStyle = {
-  width: 'auto',
-
-  minWidth: 90,
-
-  height: 40,
-
-  padding:
-    '0 16px',
-
-  border:
-    '1px solid #D9DCDA',
-
-  borderRadius: 5,
-
-  background:
-    '#FFFFFF',
-
-  color: '#202426',
-
-  fontSize: 13,
-
-  fontWeight: 700,
-
-  cursor:
-    'pointer',
-
-  flex: 'none',
-}
-
-const actionButtonStyle = {
-  width: 'auto',
-
-  minWidth: 55,
-
-  height: 32,
-
-  padding:
-    '0 10px',
-
-  border:
-    '1px solid #D9DCDA',
-
-  borderRadius: 4,
-
-  background:
-    '#FFFFFF',
-
-  color: '#202426',
-
-  fontSize: 12,
-
-  fontWeight: 700,
-
-  cursor:
-    'pointer',
-
-  flex: 'none',
-}
-
 const tableHeaderStyle = {
-  padding:
-    '13px 16px',
-
+  padding: '14px 16px',
   borderBottom:
     '1px solid #E0E2DF',
-
-  color:
-    '#202426',
-
+  color: '#686E70',
   fontSize: 12,
-
   fontWeight: 700,
-
-  whiteSpace:
-    'nowrap' as const,
 }
 
 const tableCellStyle = {
-  padding:
-    '14px 16px',
-
+  padding: '14px 16px',
   borderBottom:
     '1px solid #E0E2DF',
-
-  color:
-    '#202426',
-
+  color: '#202426',
   verticalAlign:
     'middle' as const,
 }
 
 const emptyStyle = {
-  height: 130,
-
-  padding: 20,
-
+  padding: 40,
   textAlign:
     'center' as const,
+  color: '#686E70',
+}
 
-  color:
-    '#686E70',
+const inputStyle = {
+  width: '100%',
+  height: 42,
+  padding: '0 12px',
+  border:
+    '1px solid #D9DCDA',
+  borderRadius: 5,
+  background: '#FFFFFF',
+  color: '#202426',
+  outline: 'none',
+  fontSize: 14,
+  boxSizing:
+    'border-box' as const,
+}
+
+const primaryButtonStyle = {
+  minHeight: 40,
+  padding: '0 16px',
+  border: 'none',
+  borderRadius: 5,
+  background: '#513934',
+  color: '#FFFFFF',
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: 'pointer',
+  whiteSpace:
+    'nowrap' as const,
+}
+
+const secondaryButtonStyle = {
+  minHeight: 40,
+  padding: '0 16px',
+  border:
+    '1px solid #D9DCDA',
+  borderRadius: 5,
+  background: '#FFFFFF',
+  color: '#202426',
+  fontSize: 13,
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const actionButtonStyle = {
+  minHeight: 32,
+  padding: '0 10px',
+  border:
+    '1px solid #E0E2DF',
+  borderRadius: 4,
+  background: '#FFFFFF',
+  color: '#202426',
+  fontSize: 12,
+  fontWeight: 700,
+  cursor: 'pointer',
 }

@@ -7,11 +7,13 @@ export default class NewAccountController {
     return inertia.render('auth/signup', {})
   }
 
-  async store({ request, response, auth }: HttpContext) {
-    const { passwordConfirmation, ...payload } = await request.validateUsing(signupValidator)
-    const user = await User.create({ ...payload })
+async store({ request, auth, response }: HttpContext) {
+  const payload = await request.validateUsing(signupValidator)
 
-    await auth.use('web').login(user)
-    response.redirect().toRoute('home')
-  }
+  const user = await User.create(payload)
+
+  await auth.use('web').login(user)
+
+  return response.redirect().toRoute('kasir.dashboard')
+}
 }

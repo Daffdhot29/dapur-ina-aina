@@ -10,6 +10,7 @@ import DetailPesanan from '#models/detail_pesanan'
 import Pembayaran from '#models/pembayaran'
 
 export default class Pesanan extends PesananSchema {
+  static table = 'pesanan'
   @belongsTo(() => Pelanggan, {
     foreignKey: 'idPelanggan',
     localKey: 'idPelanggan',

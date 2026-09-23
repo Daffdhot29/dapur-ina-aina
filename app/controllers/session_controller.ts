@@ -7,16 +7,41 @@ export default class SessionController {
     return inertia.render('auth/login', {})
   }
 
-  async store({ request, auth, response }: HttpContext) {
-    const { email, password } = await request.validateUsing(loginValidator)
-    const user = await User.verifyCredentials(email, password)
+  async store({
+    request,
+    auth,
+    response,
+  }: HttpContext) {
+    const { email, password } =
+      await request.validateUsing(loginValidator)
+
+    const user =
+      await User.verifyCredentials(
+        email,
+        password
+      )
 
     await auth.use('web').login(user)
-    response.redirect().toRoute('home')
+
+    if (user.roleUser === 'admin') {
+      return response
+        .redirect()
+        .toRoute('admin.dashboard')
+    }
+
+    return response
+      .redirect()
+      .toRoute('kasir.dashboard')
   }
 
-  async destroy({ auth, response }: HttpContext) {
+  async destroy({
+    auth,
+    response,
+  }: HttpContext) {
     await auth.use('web').logout()
-    response.redirect().toRoute('session.create')
+
+    return response
+      .redirect()
+      .toRoute('session.create')
   }
 }

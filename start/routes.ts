@@ -2,54 +2,145 @@ import { middleware } from '#start/kernel'
 import { controllers } from '#generated/controllers'
 import router from '@adonisjs/core/services/router'
 
-const KategorisController = () => import('#controllers/kategoris_controller')
-const MenusController = () => import('#controllers/menus_controller')
-const PelanggansController = () => import('#controllers/pelanggans_controller')
-const PesanansController = () => import('#controllers/pesanans_controller')
-const DetailPesanansController = () => import('#controllers/detail_pesanans_controller')
-const PembayaransController = () => import('#controllers/pembayarans_controller')
-const BillingsController = () => import('#controllers/billings_controller')
+const KategorisController = () =>
+  import('#controllers/kategoris_controller')
+
+const MenusController = () =>
+  import('#controllers/menus_controller')
+
+const PelanggansController = () =>
+  import('#controllers/pelanggans_controller')
+
+const PesanansController = () =>
+  import('#controllers/pesanans_controller')
+
+const DetailPesanansController = () =>
+  import('#controllers/detail_pesanans_controller')
+
+const PembayaransController = () =>
+  import('#controllers/pembayarans_controller')
+
+const BillingsController = () =>
+  import('#controllers/billings_controller')
+
 const LaporanPenjualansController = () =>
   import('#controllers/laporan_penjualans_controller')
-const DashboardController = () => import('#controllers/dashboard_controller')
 
-router.on('/').renderInertia('home', {}).as('home')
+const DashboardController = () =>
+  import('#controllers/dashboard_controller')
+
+router
+  .get('/', async ({ auth, response }) => {
+    await auth.check()
+
+    const user = auth.user
+
+    if (!user) {
+      return response
+        .redirect()
+        .toRoute('session.create')
+    }
+
+    if (user.roleUser === 'admin') {
+      return response
+        .redirect()
+        .toRoute('admin.dashboard')
+    }
+
+    return response
+      .redirect()
+      .toRoute('kasir.dashboard')
+  })
+  .as('home')
 
 router
   .group(() => {
-    router.get('signup', [controllers.NewAccount, 'create'])
-    router.post('signup', [controllers.NewAccount, 'store'])
+    router.get('signup', [
+      controllers.NewAccount,
+      'create',
+    ])
 
-    router.get('login', [controllers.Session, 'create'])
-    router.post('login', [controllers.Session, 'store'])
+    router.post('signup', [
+      controllers.NewAccount,
+      'store',
+    ])
+
+    router.get('login', [
+      controllers.Session,
+      'create',
+    ])
+
+    router.post('login', [
+      controllers.Session,
+      'store',
+    ])
   })
   .use(middleware.guest())
 
 router
   .group(() => {
-    router.post('logout', [controllers.Session, 'destroy'])
+    router.post('logout', [
+      controllers.Session,
+      'destroy',
+    ])
   })
   .use(middleware.auth())
 
 router
   .group(() => {
-    router.get('/kategoris', [KategorisController, 'index'])
-    router.get('/kategoris/:id', [KategorisController, 'show'])
+    router.get('/kategoris', [
+      KategorisController,
+      'index',
+    ])
 
-    router.get('/menus', [MenusController, 'index'])
-    router.get('/menus/:id', [MenusController, 'show'])
+    router.get('/kategoris/:id', [
+      KategorisController,
+      'show',
+    ])
+
+    router.get('/menus', [
+      MenusController,
+      'index',
+    ])
+
+    router.get('/menus/:id', [
+      MenusController,
+      'show',
+    ])
   })
   .prefix('/api')
 
 router
   .group(() => {
-    router.post('/kategoris', [KategorisController, 'store'])
-    router.put('/kategoris/:id', [KategorisController, 'update'])
-    router.delete('/kategoris/:id', [KategorisController, 'destroy'])
+    router.post('/kategoris', [
+      KategorisController,
+      'store',
+    ])
 
-    router.post('/menus', [MenusController, 'store'])
-    router.put('/menus/:id', [MenusController, 'update'])
-    router.delete('/menus/:id', [MenusController, 'destroy'])
+    router.put('/kategoris/:id', [
+      KategorisController,
+      'update',
+    ])
+
+    router.delete('/kategoris/:id', [
+      KategorisController,
+      'destroy',
+    ])
+
+    router.post('/menus', [
+      MenusController,
+      'store',
+    ])
+
+    router.put('/menus/:id', [
+      MenusController,
+      'update',
+    ])
+
+    router.delete('/menus/:id', [
+      MenusController,
+      'destroy',
+    ])
   })
   .prefix('/api')
   .use(middleware.auth())
@@ -57,15 +148,45 @@ router
 
 router
   .group(() => {
-    router.get('/pelanggans', [PelanggansController, 'index'])
-    router.get('/pelanggans/:id', [PelanggansController, 'show'])
-    router.post('/pelanggans', [PelanggansController, 'store'])
-    router.put('/pelanggans/:id', [PelanggansController, 'update'])
-    router.delete('/pelanggans/:id', [PelanggansController, 'destroy'])
+    router.get('/pelanggans', [
+      PelanggansController,
+      'index',
+    ])
 
-    router.get('/pesanans', [PesanansController, 'index'])
-    router.get('/pesanans/:id', [PesanansController, 'show'])
-    router.post('/pesanans', [PesanansController, 'store'])
+    router.get('/pelanggans/:id', [
+      PelanggansController,
+      'show',
+    ])
+
+    router.post('/pelanggans', [
+      PelanggansController,
+      'store',
+    ])
+
+    router.put('/pelanggans/:id', [
+      PelanggansController,
+      'update',
+    ])
+
+    router.delete('/pelanggans/:id', [
+      PelanggansController,
+      'destroy',
+    ])
+
+    router.get('/pesanans', [
+      PesanansController,
+      'index',
+    ])
+
+    router.get('/pesanans/:id', [
+      PesanansController,
+      'show',
+    ])
+
+    router.post('/pesanans', [
+      PesanansController,
+      'store',
+    ])
 
     router.get('/pesanans/:id/details', [
       DetailPesanansController,
@@ -77,12 +198,30 @@ router
       'show',
     ])
 
-    router.get('/pembayarans', [PembayaransController, 'index'])
-    router.get('/pembayarans/:id', [PembayaransController, 'show'])
-    router.post('/pembayarans', [PembayaransController, 'store'])
+    router.get('/pembayarans', [
+      PembayaransController,
+      'index',
+    ])
 
-    router.get('/billings', [BillingsController, 'index'])
-    router.get('/billings/:id', [BillingsController, 'show'])
+    router.get('/pembayarans/:id', [
+      PembayaransController,
+      'show',
+    ])
+
+    router.post('/pembayarans', [
+      PembayaransController,
+      'store',
+    ])
+
+    router.get('/billings', [
+      BillingsController,
+      'index',
+    ])
+
+    router.get('/billings/:id', [
+      BillingsController,
+      'show',
+    ])
 
     router.post('/pesanans/:id/billing', [
       BillingsController,
@@ -109,12 +248,18 @@ router
   .use(middleware.admin())
 
 router
-  .get('/admin/dashboard', [DashboardController, 'index'])
+  .get('/admin/dashboard', [
+    DashboardController,
+    'index',
+  ])
   .use(middleware.auth())
   .use(middleware.admin())
   .as('admin.dashboard')
 
 router
-  .get('/kasir/dashboard', [DashboardController,'kasir'])
+  .get('/kasir/dashboard', [
+    DashboardController,
+    'kasir',
+  ])
   .use(middleware.auth())
   .as('kasir.dashboard')

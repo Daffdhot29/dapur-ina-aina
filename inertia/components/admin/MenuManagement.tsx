@@ -1,4 +1,12 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import {
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+
+import { apiFetch } from '~/lib/api'
 
 type Kategori = {
   idKategori: string
@@ -12,7 +20,6 @@ type Menu = {
   deskripsi: string | null
   harga: number
   stok: number
-
   kategori?: Kategori
 }
 
@@ -60,29 +67,25 @@ export default function MenuManagement() {
   const [kategoriModalOpen, setKategoriModalOpen] = useState(false)
 
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null)
-  const [menuForm, setMenuForm] = useState<MenuForm>(emptyMenuForm)
 
-  const [kategoriForm, setKategoriForm] = useState<KategoriForm>({
-    namaKategori: '',
-  })
+  const [menuForm, setMenuForm] =
+    useState<MenuForm>(emptyMenuForm)
+
+  const [kategoriForm, setKategoriForm] =
+    useState<KategoriForm>({
+      namaKategori: '',
+    })
 
   async function loadData() {
     try {
       setLoading(true)
       setError('')
 
-      const [menuResponse, kategoriResponse] = await Promise.all([
-        fetch('/api/menus', {
-          headers: {
-            Accept: 'application/json',
-          },
-        }),
-        fetch('/api/kategoris', {
-          headers: {
-            Accept: 'application/json',
-          },
-        }),
-      ])
+      const [menuResponse, kategoriResponse] =
+        await Promise.all([
+          apiFetch('/api/menus'),
+          apiFetch('/api/kategoris'),
+        ])
 
       if (!menuResponse.ok) {
         throw new Error('Gagal mengambil data menu.')
@@ -95,7 +98,12 @@ export default function MenuManagement() {
       const menuData = await menuResponse.json()
       const kategoriData = await kategoriResponse.json()
 
-      setMenus(Array.isArray(menuData) ? menuData : menuData.data ?? [])
+      setMenus(
+        Array.isArray(menuData)
+          ? menuData
+          : menuData.data ?? []
+      )
+
       setKategoris(
         Array.isArray(kategoriData)
           ? kategoriData
@@ -125,12 +133,17 @@ export default function MenuManagement() {
 
     return menus.filter((menu) => {
       const kategori = kategoris.find(
-        (item) => item.idKategori === menu.idKategori
+        (item) =>
+          item.idKategori === menu.idKategori
       )
 
       return (
-        menu.namaMenu.toLowerCase().includes(keyword) ||
-        kategori?.namaKategori.toLowerCase().includes(keyword)
+        menu.namaMenu
+          .toLowerCase()
+          .includes(keyword) ||
+        kategori?.namaKategori
+          .toLowerCase()
+          .includes(keyword)
       )
     })
   }, [menus, kategoris, search])
@@ -148,7 +161,8 @@ export default function MenuManagement() {
 
     setMenuForm({
       ...emptyMenuForm,
-      idKategori: kategoris[0]?.idKategori ?? '',
+      idKategori:
+        kategoris[0]?.idKategori ?? '',
     })
 
     setMessage('')
@@ -178,7 +192,9 @@ export default function MenuManagement() {
     setMenuForm(emptyMenuForm)
   }
 
-  async function submitMenu(event: FormEvent) {
+  async function submitMenu(
+    event: FormEvent
+  ) {
     event.preventDefault()
 
     try {
@@ -189,29 +205,46 @@ export default function MenuManagement() {
         ? `/api/menus/${editingMenu.idMenu}`
         : '/api/menus'
 
-      const method = editingMenu ? 'PUT' : 'POST'
+      const method =
+        editingMenu ? 'PUT' : 'POST'
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          namaMenu: menuForm.namaMenu,
-          idKategori: menuForm.idKategori,
-          deskripsi: menuForm.deskripsi || undefined,
-          harga: Number(menuForm.harga),
-          stok: Number(menuForm.stok),
-        }),
-      })
+      const response = await apiFetch(
+        url,
+        {
+          method,
+
+          body: JSON.stringify({
+            namaMenu:
+              menuForm.namaMenu,
+
+            idKategori:
+              menuForm.idKategori,
+
+            deskripsi:
+              menuForm.deskripsi ||
+              undefined,
+
+            harga:
+              Number(menuForm.harga),
+
+            stok:
+              Number(menuForm.stok),
+          }),
+        }
+      )
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null)
+        const data = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
           data?.message ??
-            `Gagal ${editingMenu ? 'mengubah' : 'menambah'} menu.`
+            `Gagal ${
+              editingMenu
+                ? 'mengubah'
+                : 'menambah'
+            } menu.`
         )
       }
 
@@ -233,10 +266,13 @@ export default function MenuManagement() {
     }
   }
 
-  async function deleteMenu(menu: Menu) {
-    const confirmed = window.confirm(
-      `Hapus menu "${menu.namaMenu}"?`
-    )
+  async function deleteMenu(
+    menu: Menu
+  ) {
+    const confirmed =
+      window.confirm(
+        `Hapus menu "${menu.namaMenu}"?`
+      )
 
     if (!confirmed) {
       return
@@ -246,22 +282,28 @@ export default function MenuManagement() {
       setError('')
       setMessage('')
 
-      const response = await fetch(`/api/menus/${menu.idMenu}`, {
-        method: 'DELETE',
-        headers: {
-          Accept: 'application/json',
-        },
-      })
+      const response =
+        await apiFetch(
+          `/api/menus/${menu.idMenu}`,
+          {
+            method: 'DELETE',
+          }
+        )
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null)
+        const data = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
-          data?.message ?? 'Gagal menghapus menu.'
+          data?.message ??
+            'Gagal menghapus menu.'
         )
       }
 
-      setMessage('Menu berhasil dihapus.')
+      setMessage(
+        'Menu berhasil dihapus.'
+      )
 
       await loadData()
     } catch (err) {
@@ -273,29 +315,36 @@ export default function MenuManagement() {
     }
   }
 
-  async function submitKategori(event: FormEvent) {
+  async function submitKategori(
+    event: FormEvent
+  ) {
     event.preventDefault()
 
     try {
       setError('')
       setMessage('')
 
-      const response = await fetch('/api/kategoris', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          namaKategori: kategoriForm.namaKategori,
-        }),
-      })
+      const response =
+        await apiFetch(
+          '/api/kategoris',
+          {
+            method: 'POST',
+
+            body: JSON.stringify({
+              namaKategori:
+                kategoriForm.namaKategori,
+            }),
+          }
+        )
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null)
+        const data = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
-          data?.message ?? 'Gagal menambahkan kategori.'
+          data?.message ??
+            'Gagal menambahkan kategori.'
         )
       }
 
@@ -303,7 +352,9 @@ export default function MenuManagement() {
         namaKategori: '',
       })
 
-      setMessage('Kategori berhasil ditambahkan.')
+      setMessage(
+        'Kategori berhasil ditambahkan.'
+      )
 
       await loadData()
     } catch (err) {
@@ -315,10 +366,13 @@ export default function MenuManagement() {
     }
   }
 
-  async function deleteKategori(kategori: Kategori) {
-    const confirmed = window.confirm(
-      `Hapus kategori "${kategori.namaKategori}"?`
-    )
+  async function deleteKategori(
+    kategori: Kategori
+  ) {
+    const confirmed =
+      window.confirm(
+        `Hapus kategori "${kategori.namaKategori}"?`
+      )
 
     if (!confirmed) {
       return
@@ -328,25 +382,28 @@ export default function MenuManagement() {
       setError('')
       setMessage('')
 
-      const response = await fetch(
-        `/api/kategoris/${kategori.idKategori}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Accept: 'application/json',
-          },
-        }
-      )
+      const response =
+        await apiFetch(
+          `/api/kategoris/${kategori.idKategori}`,
+          {
+            method: 'DELETE',
+          }
+        )
 
       if (!response.ok) {
-        const data = await response.json().catch(() => null)
+        const data = await response
+          .json()
+          .catch(() => null)
 
         throw new Error(
-          data?.message ?? 'Gagal menghapus kategori.'
+          data?.message ??
+            'Gagal menghapus kategori.'
         )
       }
 
-      setMessage('Kategori berhasil dihapus.')
+      setMessage(
+        'Kategori berhasil dihapus.'
+      )
 
       await loadData()
     } catch (err) {
@@ -360,13 +417,13 @@ export default function MenuManagement() {
 
   return (
     <>
-      {/* MESSAGE */}
       {message && (
         <div
           style={{
             padding: '12px 15px',
             marginBottom: 18,
-            border: '1px solid #B7DEC5',
+            border:
+              '1px solid #B7DEC5',
             background: '#EFFAF3',
             borderRadius: 5,
             color: '#22613A',
@@ -382,7 +439,8 @@ export default function MenuManagement() {
           style={{
             padding: '12px 15px',
             marginBottom: 18,
-            border: '1px solid #F0B8B4',
+            border:
+              '1px solid #F0B8B4',
             background: '#FFF1F0',
             borderRadius: 5,
             color: colors.danger,
@@ -393,12 +451,12 @@ export default function MenuManagement() {
         </div>
       )}
 
-      {/* TOOLBAR */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent:
+            'space-between',
           gap: 16,
           marginBottom: 18,
         }}
@@ -406,13 +464,18 @@ export default function MenuManagement() {
         <input
           type="search"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(event) =>
+            setSearch(
+              event.target.value
+            )
+          }
           placeholder="Cari nama menu..."
           style={{
             width: 310,
             height: 42,
             padding: '0 13px',
-            border: `1px solid ${colors.border}`,
+            border:
+              `1px solid ${colors.border}`,
             borderRadius: 5,
             outline: 'none',
             fontSize: 14,
@@ -428,13 +491,19 @@ export default function MenuManagement() {
         >
           <button
             type="button"
-            onClick={() => setKategoriModalOpen(true)}
+            onClick={() =>
+              setKategoriModalOpen(
+                true
+              )
+            }
             style={{
               height: 42,
               padding: '0 18px',
-              border: `1px solid ${colors.border}`,
+              border:
+                `1px solid ${colors.border}`,
               borderRadius: 5,
-              background: colors.white,
+              background:
+                colors.white,
               color: colors.text,
               fontWeight: 500,
               cursor: 'pointer',
@@ -451,7 +520,8 @@ export default function MenuManagement() {
               padding: '0 18px',
               border: 'none',
               borderRadius: 5,
-              background: colors.primary,
+              background:
+                colors.primary,
               color: colors.white,
               fontWeight: 500,
               cursor: 'pointer',
@@ -462,28 +532,39 @@ export default function MenuManagement() {
         </div>
       </div>
 
-      {/* TABLE */}
       <section
         style={{
-          background: colors.white,
-          border: `1px solid ${colors.border}`,
+          background:
+            colors.white,
+
+          border:
+            `1px solid ${colors.border}`,
+
           borderRadius: 7,
+
           overflow: 'hidden',
         }}
       >
-        <div style={{ overflowX: 'auto' }}>
+        <div
+          style={{
+            overflowX: 'auto',
+          }}
+        >
           <table
             style={{
               width: '100%',
               minWidth: 750,
-              borderCollapse: 'collapse',
+              borderCollapse:
+                'collapse',
               fontSize: 14,
             }}
           >
             <thead>
               <tr
                 style={{
-                  background: colors.tableHeader,
+                  background:
+                    colors.tableHeader,
+
                   textAlign: 'left',
                 }}
               >
@@ -497,8 +578,11 @@ export default function MenuManagement() {
                   <th
                     key={heading}
                     style={{
-                      padding: '15px 17px',
-                      borderBottom: `1px solid ${colors.border}`,
+                      padding:
+                        '15px 17px',
+
+                      borderBottom:
+                        `1px solid ${colors.border}`,
                     }}
                   >
                     {heading}
@@ -514,95 +598,162 @@ export default function MenuManagement() {
                     colSpan={5}
                     style={{
                       padding: 45,
-                      textAlign: 'center',
-                      color: colors.muted,
+
+                      textAlign:
+                        'center',
+
+                      color:
+                        colors.muted,
                     }}
                   >
                     Memuat data...
                   </td>
                 </tr>
-              ) : filteredMenus.length === 0 ? (
+              ) : filteredMenus.length ===
+                0 ? (
                 <tr>
                   <td
                     colSpan={5}
                     style={{
                       padding: 45,
-                      textAlign: 'center',
-                      color: colors.muted,
+
+                      textAlign:
+                        'center',
+
+                      color:
+                        colors.muted,
                     }}
                   >
-                    Belum ada data menu.
+                    Belum ada data
+                    menu.
                   </td>
                 </tr>
               ) : (
-                filteredMenus.map((menu) => {
-                  const kategori = kategoris.find(
-                    (item) =>
-                      item.idKategori === menu.idKategori
-                  )
+                filteredMenus.map(
+                  (menu) => {
+                    const kategori =
+                      kategoris.find(
+                        (item) =>
+                          item.idKategori ===
+                          menu.idKategori
+                      )
 
-                  return (
-                    <tr key={menu.idMenu}>
-                      <td style={cellStyle}>
-                        <strong>{menu.namaMenu}</strong>
-                      </td>
-
-                      <td style={cellStyle}>
-                        {kategori?.namaKategori ?? '-'}
-                      </td>
-
-                      <td style={cellStyle}>
-                        {formatRupiah(Number(menu.harga))}
-                      </td>
-
-                      <td style={cellStyle}>
-                        {menu.stok}
-                      </td>
-
-                      <td style={cellStyle}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: 8,
-                          }}
+                    return (
+                      <tr
+                        key={
+                          menu.idMenu
+                        }
+                      >
+                        <td
+                          style={
+                            cellStyle
+                          }
                         >
-                          <button
-                            type="button"
-                            onClick={() => openEditMenu(menu)}
-                            style={smallButtonStyle}
-                          >
-                            Edit
-                          </button>
+                          <strong>
+                            {
+                              menu.namaMenu
+                            }
+                          </strong>
+                        </td>
 
-                          <button
-                            type="button"
-                            onClick={() => deleteMenu(menu)}
+                        <td
+                          style={
+                            cellStyle
+                          }
+                        >
+                          {kategori?.namaKategori ??
+                            '-'}
+                        </td>
+
+                        <td
+                          style={
+                            cellStyle
+                          }
+                        >
+                          {formatRupiah(
+                            Number(
+                              menu.harga
+                            )
+                          )}
+                        </td>
+
+                        <td
+                          style={
+                            cellStyle
+                          }
+                        >
+                          {menu.stok}
+                        </td>
+
+                        <td
+                          style={
+                            cellStyle
+                          }
+                        >
+                          <div
                             style={{
-                              ...smallButtonStyle,
-                              color: colors.danger,
+                              display:
+                                'flex',
+                              gap: 8,
                             }}
                           >
-                            Hapus
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openEditMenu(
+                                  menu
+                                )
+                              }
+                              style={
+                                smallButtonStyle
+                              }
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                deleteMenu(
+                                  menu
+                                )
+                              }
+                              style={{
+                                ...smallButtonStyle,
+
+                                color:
+                                  colors.danger,
+                              }}
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  }
+                )
               )}
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* MENU MODAL */}
       {menuModalOpen && (
         <Modal
-          title={editingMenu ? 'Edit Menu' : 'Tambah Menu'}
-          onClose={closeMenuModal}
+          title={
+            editingMenu
+              ? 'Edit Menu'
+              : 'Tambah Menu'
+          }
+          onClose={
+            closeMenuModal
+          }
         >
           <form
-            onSubmit={submitMenu}
+            onSubmit={
+              submitMenu
+            }
             style={{
               display: 'grid',
               gap: 16,
@@ -612,43 +763,74 @@ export default function MenuManagement() {
               <input
                 required
                 type="text"
-                value={menuForm.namaMenu}
+                value={
+                  menuForm.namaMenu
+                }
                 onChange={(event) =>
                   setMenuForm({
                     ...menuForm,
-                    namaMenu: event.target.value,
+
+                    namaMenu:
+                      event.target
+                        .value,
                   })
                 }
                 placeholder="Masukkan nama menu"
-                style={formInputStyle}
+                style={
+                  formInputStyle
+                }
               />
             </Field>
 
             <Field label="Kategori">
               <select
                 required
-                value={menuForm.idKategori}
+                value={
+                  menuForm.idKategori
+                }
                 onChange={(event) =>
                   setMenuForm({
                     ...menuForm,
-                    idKategori: event.target.value,
+
+                    idKategori:
+                      event.target
+                        .value,
                   })
                 }
-                style={formInputStyle}
+                style={
+                  formInputStyle
+                }
               >
-                <option value="">Pilih kategori</option>
-                {kategoris.map((kategori) => (
-                  <option key={kategori.idKategori} value={kategori.idKategori}>
-                    {kategori.namaKategori}
-                  </option>
-                ))}
+                <option value="">
+                  Pilih kategori
+                </option>
+
+                {kategoris.map(
+                  (kategori) => (
+                    <option
+                      key={
+                        kategori.idKategori
+                      }
+                      value={
+                        kategori.idKategori
+                      }
+                    >
+                      {
+                        kategori.namaKategori
+                      }
+                    </option>
+                  )
+                )}
               </select>
             </Field>
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
+
+                gridTemplateColumns:
+                  '1fr 1fr',
+
                 gap: 14,
               }}
             >
@@ -657,15 +839,24 @@ export default function MenuManagement() {
                   required
                   type="number"
                   min="0"
-                  value={menuForm.harga}
-                  onChange={(event) =>
+                  value={
+                    menuForm.harga
+                  }
+                  onChange={(
+                    event
+                  ) =>
                     setMenuForm({
                       ...menuForm,
-                      harga: event.target.value,
+
+                      harga:
+                        event.target
+                          .value,
                     })
                   }
                   placeholder="Contoh: 20000"
-                  style={formInputStyle}
+                  style={
+                    formInputStyle
+                  }
                 />
               </Field>
 
@@ -675,36 +866,57 @@ export default function MenuManagement() {
                   type="number"
                   min="0"
                   step="1"
-                  value={menuForm.stok}
-                  onChange={(event) =>
+                  value={
+                    menuForm.stok
+                  }
+                  onChange={(
+                    event
+                  ) =>
                     setMenuForm({
                       ...menuForm,
-                      stok: event.target.value,
+
+                      stok:
+                        event.target
+                          .value,
                     })
                   }
                   placeholder="Contoh: 20"
-                  style={formInputStyle}
+                  style={
+                    formInputStyle
+                  }
                 />
               </Field>
             </div>
 
             <Field label="Deskripsi">
               <textarea
-                value={menuForm.deskripsi}
+                value={
+                  menuForm.deskripsi
+                }
                 onChange={(event) =>
                   setMenuForm({
                     ...menuForm,
-                    deskripsi: event.target.value,
+
+                    deskripsi:
+                      event.target
+                        .value,
                   })
                 }
                 placeholder="Masukkan deskripsi menu"
                 rows={3}
                 style={{
                   ...formInputStyle,
+
                   height: 85,
-                  padding: '11px 12px',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
+
+                  padding:
+                    '11px 12px',
+
+                  resize:
+                    'vertical',
+
+                  fontFamily:
+                    'inherit',
                 }}
               />
             </Field>
@@ -712,56 +924,118 @@ export default function MenuManagement() {
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'flex-end',
+
+                justifyContent:
+                  'flex-end',
+
                 gap: 10,
+
                 paddingTop: 4,
               }}
             >
-              <button type="button" onClick={closeMenuModal} style={secondaryModalButton}>
+              <button
+                type="button"
+                onClick={
+                  closeMenuModal
+                }
+                style={
+                  secondaryModalButton
+                }
+              >
                 Batal
               </button>
-              <button type="submit" style={primaryModalButton}>
-                {editingMenu ? 'Simpan Perubahan' : 'Tambah Menu'}
+
+              <button
+                type="submit"
+                style={
+                  primaryModalButton
+                }
+              >
+                {editingMenu
+                  ? 'Simpan Perubahan'
+                  : 'Tambah Menu'}
               </button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* KATEGORI MODAL */}
       {kategoriModalOpen && (
-        <Modal title="Kelola Kategori" onClose={() => setKategoriModalOpen(false)}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <Modal
+          title="Kelola Kategori"
+          onClose={() =>
+            setKategoriModalOpen(
+              false
+            )
+          }
+        >
+          <div
+            style={{
+              display: 'flex',
+
+              flexDirection:
+                'column',
+
+              gap: 20,
+            }}
+          >
             <form
-              onSubmit={submitKategori}
+              onSubmit={
+                submitKategori
+              }
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1fr) 110px',
+
+                gridTemplateColumns:
+                  'minmax(0, 1fr) 110px',
+
                 gap: 10,
+
                 width: '100%',
-                alignItems: 'center',
+
+                alignItems:
+                  'center',
               }}
             >
               <input
                 required
                 type="text"
-                value={kategoriForm.namaKategori}
+                value={
+                  kategoriForm.namaKategori
+                }
                 onChange={(event) =>
-                  setKategoriForm({ namaKategori: event.target.value })
+                  setKategoriForm({
+                    namaKategori:
+                      event.target
+                        .value,
+                  })
                 }
                 placeholder="Nama kategori"
                 style={{
                   width: '100%',
                   minWidth: 0,
                   height: 42,
-                  padding: '0 12px',
-                  border: '1px solid #D9DCDA',
+
+                  padding:
+                    '0 12px',
+
+                  border:
+                    '1px solid #D9DCDA',
+
                   borderRadius: 6,
-                  background: colors.white,
-                  color: colors.text,
+
+                  background:
+                    colors.white,
+
+                  color:
+                    colors.text,
+
                   fontSize: 14,
+
                   outline: 'none',
-                  boxSizing: 'border-box',
+
+                  boxSizing:
+                    'border-box',
                 }}
               />
 
@@ -771,24 +1045,47 @@ export default function MenuManagement() {
                   width: 110,
                   minWidth: 110,
                   maxWidth: 110,
+
                   height: 42,
                   minHeight: 42,
                   maxHeight: 42,
+
                   padding: 0,
                   margin: 0,
+
                   border: 'none',
+
                   borderRadius: 6,
-                  background: colors.primary,
-                  color: colors.white,
+
+                  background:
+                    colors.primary,
+
+                  color:
+                    colors.white,
+
                   fontSize: 13,
+
                   fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxSizing: 'border-box',
+
+                  cursor:
+                    'pointer',
+
+                  display:
+                    'inline-flex',
+
+                  alignItems:
+                    'center',
+
+                  justifyContent:
+                    'center',
+
+                  boxSizing:
+                    'border-box',
+
                   flex: 'none',
-                  justifySelf: 'end',
+
+                  justifySelf:
+                    'end',
                 }}
               >
                 + Tambah
@@ -799,8 +1096,12 @@ export default function MenuManagement() {
               <div
                 style={{
                   marginBottom: 10,
-                  color: colors.muted,
+
+                  color:
+                    colors.muted,
+
                   fontSize: 13,
+
                   fontWeight: 700,
                 }}
               >
@@ -810,91 +1111,175 @@ export default function MenuManagement() {
               <div
                 style={{
                   width: '100%',
-                  border: `1px solid ${colors.border}`,
+
+                  border:
+                    `1px solid ${colors.border}`,
+
                   borderRadius: 7,
-                  overflow: 'hidden',
-                  background: colors.white,
-                  boxSizing: 'border-box',
+
+                  overflow:
+                    'hidden',
+
+                  background:
+                    colors.white,
+
+                  boxSizing:
+                    'border-box',
                 }}
               >
-                {kategoris.length === 0 ? (
+                {kategoris.length ===
+                0 ? (
                   <div
                     style={{
-                      padding: '30px 20px',
-                      textAlign: 'center',
-                      color: colors.muted,
+                      padding:
+                        '30px 20px',
+
+                      textAlign:
+                        'center',
+
+                      color:
+                        colors.muted,
+
                       fontSize: 14,
                     }}
                   >
-                    Belum ada kategori.
+                    Belum ada
+                    kategori.
                   </div>
                 ) : (
-                  kategoris.map((kategori, index) => (
-                    <div
-                      key={kategori.idKategori}
-                      style={{
-                        width: '100%',
-                        minHeight: 58,
-                        padding: '0 14px',
-                        display: 'grid',
-                        gridTemplateColumns: 'minmax(0, 1fr) 76px',
-                        alignItems: 'center',
-                        gap: 16,
-                        borderBottom:
-                          index < kategoris.length - 1
-                            ? `1px solid ${colors.border}`
-                            : 'none',
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <span
+                  kategoris.map(
+                    (
+                      kategori,
+                      index
+                    ) => (
+                      <div
+                        key={
+                          kategori.idKategori
+                        }
                         style={{
-                          display: 'block',
-                          minWidth: 0,
-                          color: colors.text,
-                          fontSize: 14,
-                          fontWeight: 600,
-                          lineHeight: 1.4,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {kategori.namaKategori}
-                      </span>
+                          width:
+                            '100%',
 
-                      <button
-                        type="button"
-                        onClick={() => deleteKategori(kategori)}
-                        style={{
-                          width: 76,
-                          minWidth: 76,
-                          maxWidth: 76,
-                          height: 34,
-                          minHeight: 34,
-                          maxHeight: 34,
-                          padding: 0,
-                          margin: 0,
-                          border: '1px solid #E8C8C5',
-                          borderRadius: 5,
-                          background: colors.white,
-                          color: colors.danger,
-                          fontSize: 12,
-                          fontWeight: 700,
-                          lineHeight: 1,
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxSizing: 'border-box',
-                          flex: 'none',
-                          justifySelf: 'end',
+                          minHeight: 58,
+
+                          padding:
+                            '0 14px',
+
+                          display:
+                            'grid',
+
+                          gridTemplateColumns:
+                            'minmax(0, 1fr) 76px',
+
+                          alignItems:
+                            'center',
+
+                          gap: 16,
+
+                          borderBottom:
+                            index <
+                            kategoris.length -
+                              1
+                              ? `1px solid ${colors.border}`
+                              : 'none',
+
+                          boxSizing:
+                            'border-box',
                         }}
                       >
-                        Hapus
-                      </button>
-                    </div>
-                  ))
+                        <span
+                          style={{
+                            display:
+                              'block',
+
+                            minWidth: 0,
+
+                            color:
+                              colors.text,
+
+                            fontSize: 14,
+
+                            fontWeight: 600,
+
+                            lineHeight: 1.4,
+
+                            overflow:
+                              'hidden',
+
+                            textOverflow:
+                              'ellipsis',
+
+                            whiteSpace:
+                              'nowrap',
+                          }}
+                        >
+                          {
+                            kategori.namaKategori
+                          }
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            deleteKategori(
+                              kategori
+                            )
+                          }
+                          style={{
+                            width: 76,
+                            minWidth: 76,
+                            maxWidth: 76,
+
+                            height: 34,
+                            minHeight: 34,
+                            maxHeight: 34,
+
+                            padding: 0,
+                            margin: 0,
+
+                            border:
+                              '1px solid #E8C8C5',
+
+                            borderRadius: 5,
+
+                            background:
+                              colors.white,
+
+                            color:
+                              colors.danger,
+
+                            fontSize: 12,
+
+                            fontWeight: 700,
+
+                            lineHeight: 1,
+
+                            cursor:
+                              'pointer',
+
+                            display:
+                              'inline-flex',
+
+                            alignItems:
+                              'center',
+
+                            justifyContent:
+                              'center',
+
+                            boxSizing:
+                              'border-box',
+
+                            flex: 'none',
+
+                            justifySelf:
+                              'end',
+                          }}
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    )
+                  )
                 )}
               </div>
             </div>
@@ -911,60 +1296,109 @@ function Modal({
   onClose,
 }: {
   title: string
-  children: React.ReactNode
+  children: ReactNode
   onClose: () => void
 }) {
   return (
     <div
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (
+          event.target ===
+          event.currentTarget
+        ) {
+          onClose()
+        }
       }}
       style={{
         position: 'fixed',
         inset: 0,
         zIndex: 9999,
-        background: 'rgba(20, 24, 25, 0.45)',
+
+        background:
+          'rgba(20, 24, 25, 0.45)',
+
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+
+        alignItems:
+          'center',
+
+        justifyContent:
+          'center',
+
         padding: 24,
-        boxSizing: 'border-box',
+
+        boxSizing:
+          'border-box',
       }}
     >
       <div
-        onMouseDown={(event) => event.stopPropagation()}
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
         style={{
           width: 520,
+
           maxWidth: '100%',
-          maxHeight: 'calc(100vh - 48px)',
-          background: '#FFFFFF',
+
+          maxHeight:
+            'calc(100vh - 48px)',
+
+          background:
+            '#FFFFFF',
+
           borderRadius: 10,
-          boxShadow: '0 20px 55px rgba(0,0,0,0.20)',
+
+          boxShadow:
+            '0 20px 55px rgba(0,0,0,0.20)',
+
           display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
+
+          flexDirection:
+            'column',
+
+          overflow:
+            'hidden',
         }}
       >
         <div
           style={{
             width: '100%',
+
             height: 62,
             minHeight: 62,
-            padding: '0 18px 0 20px',
+
+            padding:
+              '0 18px 0 20px',
+
             display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid #E0E2DF',
-            boxSizing: 'border-box',
+
+            flexDirection:
+              'row',
+
+            alignItems:
+              'center',
+
+            justifyContent:
+              'space-between',
+
+            borderBottom:
+              '1px solid #E0E2DF',
+
+            boxSizing:
+              'border-box',
+
             flexShrink: 0,
           }}
         >
           <strong
             style={{
-              color: '#202426',
+              color:
+                '#202426',
+
               fontSize: 17,
+
               fontWeight: 700,
+
               lineHeight: 1,
             }}
           >
@@ -979,24 +1413,47 @@ function Modal({
               width: 34,
               minWidth: 34,
               maxWidth: 34,
+
               height: 34,
               minHeight: 34,
               maxHeight: 34,
+
               padding: 0,
               margin: 0,
-              border: '1px solid #DADDDC',
+
+              border:
+                '1px solid #DADDDC',
+
               borderRadius: 6,
-              background: '#FFFFFF',
-              color: '#3C4143',
+
+              background:
+                '#FFFFFF',
+
+              color:
+                '#3C4143',
+
               fontSize: 21,
+
               fontWeight: 400,
+
               lineHeight: 1,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+
+              cursor:
+                'pointer',
+
+              display:
+                'inline-flex',
+
+              alignItems:
+                'center',
+
+              justifyContent:
+                'center',
+
               flex: 'none',
-              boxSizing: 'border-box',
+
+              boxSizing:
+                'border-box',
             }}
           >
             ×
@@ -1006,9 +1463,14 @@ function Modal({
         <div
           style={{
             width: '100%',
+
             padding: 20,
-            overflowY: 'auto',
-            boxSizing: 'border-box',
+
+            overflowY:
+              'auto',
+
+            boxSizing:
+              'border-box',
           }}
         >
           {children}
@@ -1023,19 +1485,24 @@ function Field({
   children,
 }: {
   label: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <label
       style={{
         display: 'grid',
+
         gap: 7,
+
         fontSize: 13,
+
         fontWeight: 700,
+
         color: '#202426',
       }}
     >
       {label}
+
       {children}
     </label>
   )
@@ -1043,60 +1510,126 @@ function Field({
 
 const cellStyle = {
   padding: '15px 17px',
-  borderBottom: '1px solid #E0E2DF',
+
+  borderBottom:
+    '1px solid #E0E2DF',
+
   color: '#202426',
 }
 
 const smallButtonStyle = {
   minHeight: 32,
+
   padding: '0 10px',
-  border: '1px solid #E0E2DF',
+
+  border:
+    '1px solid #E0E2DF',
+
   borderRadius: 4,
-  background: '#FFFFFF',
-  color: '#202426',
+
+  background:
+    '#FFFFFF',
+
+  color:
+    '#202426',
+
   fontSize: 12,
+
   fontWeight: 700,
-  cursor: 'pointer',
+
+  cursor:
+    'pointer',
 }
 
 const formInputStyle = {
   width: '100%',
+
   height: 42,
-  padding: '0 12px',
-  border: '1px solid #D9DCDA',
+
+  padding:
+    '0 12px',
+
+  border:
+    '1px solid #D9DCDA',
+
   borderRadius: 5,
-  background: '#FFFFFF',
-  color: '#202426',
-  outline: 'none',
+
+  background:
+    '#FFFFFF',
+
+  color:
+    '#202426',
+
+  outline:
+    'none',
+
   fontSize: 14,
-  fontFamily: 'inherit',
-  boxSizing: 'border-box' as const,
+
+  fontFamily:
+    'inherit',
+
+  boxSizing:
+    'border-box' as const,
 }
 
 const primaryModalButton = {
   height: 40,
-  padding: '0 17px',
-  border: 'none',
+
+  padding:
+    '0 17px',
+
+  border:
+    'none',
+
   borderRadius: 5,
-  background: '#513934',
-  color: '#FFFFFF',
+
+  background:
+    '#513934',
+
+  color:
+    '#FFFFFF',
+
   fontSize: 13,
+
   fontWeight: 700,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap' as const,
-  boxSizing: 'border-box' as const,
+
+  cursor:
+    'pointer',
+
+  whiteSpace:
+    'nowrap' as const,
+
+  boxSizing:
+    'border-box' as const,
 }
 
 const secondaryModalButton = {
   height: 40,
-  padding: '0 17px',
-  border: '1px solid #D9DCDA',
+
+  padding:
+    '0 17px',
+
+  border:
+    '1px solid #D9DCDA',
+
   borderRadius: 5,
-  background: '#FFFFFF',
-  color: '#202426',
+
+  background:
+    '#FFFFFF',
+
+  color:
+    '#202426',
+
   fontSize: 13,
+
   fontWeight: 700,
-  cursor: 'pointer',
-  whiteSpace: 'nowrap' as const,
-  boxSizing: 'border-box' as const,
+
+  cursor:
+    'pointer',
+
+  whiteSpace:
+    'nowrap' as const,
+
+  boxSizing:
+    'border-box' as const,
 }

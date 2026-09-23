@@ -25,7 +25,7 @@ export default class extends BaseSchema {
 
       table.decimal('harga', 12, 2).notNullable()
 
-      table.decimal('subTotal', 12, 2).notNullable()
+      table.decimal('sub_total', 12, 2).notNullable()
     })
   }
 

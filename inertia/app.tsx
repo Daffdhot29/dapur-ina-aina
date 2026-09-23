@@ -8,17 +8,21 @@ import { createInertiaApp, type ResolvedComponent } from '@inertiajs/react'
 import { TuyauProvider } from '@adonisjs/inertia/react'
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 
-const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
+const appName = import.meta.env.VITE_APP_NAME || 'Dapur Ina Aina'
 
 createInertiaApp({
   title: (title) => (title ? `${title} - ${appName}` : appName),
+
   resolve: (name) => {
     return resolvePageComponent<ResolvedComponent>(
       `./pages/${name}.tsx`,
       import.meta.glob<ResolvedComponent>('./pages/**/*.tsx'),
-      (page: ReactElement<Data.SharedProps>) => <Layout children={page} />
+      (page: ReactElement<Data.SharedProps>) => (
+        <Layout children={page} />
+      )
     )
   },
+
   setup({ el, App, props }) {
     createRoot(el).render(
       <TuyauProvider client={client}>
@@ -26,6 +30,7 @@ createInertiaApp({
       </TuyauProvider>
     )
   },
+
   progress: {
     color: '#4B5563',
   },

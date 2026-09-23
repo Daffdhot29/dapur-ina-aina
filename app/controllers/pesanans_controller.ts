@@ -16,44 +16,73 @@ export default class PesanansController {
       .preload('detailPesanans')
       .orderBy('tanggal_pesanan', 'desc')
 
-    return response.ok({ data: pesanans })
+    return response.ok({
+      data: pesanans,
+    })
   }
 
-  async show({ params, response }: HttpContext) {
+  async show({
+    params,
+    response,
+  }: HttpContext) {
     const pesanan = await Pesanan.query()
       .where('id_pesanan', params.id)
       .preload('pelanggan')
-      .preload('detailPesanans', (query) => {
-        query.preload('menu')
-      })
+      .preload(
+        'detailPesanans',
+        (query) => {
+          query.preload('menu')
+        }
+      )
       .firstOrFail()
 
-    return response.ok({ data: pesanan })
+    return response.ok({
+      data: pesanan,
+    })
   }
 
-  async store({ request, response }: HttpContext) {
-    const payload = await request.validateUsing(createPesananValidator)
+  async store({
+    request,
+    response,
+  }: HttpContext) {
+    const payload =
+      await request.validateUsing(
+        createPesananValidator
+      )
 
-    const menuIds = payload.items.map((item) => item.idMenu)
+    const menuIds = payload.items.map(
+      (item) => item.idMenu
+    )
 
-    if (new Set(menuIds).size !== menuIds.length) {
+    if (
+      new Set(menuIds).size !==
+      menuIds.length
+    ) {
       return response.unprocessableEntity({
-        message: 'Menu yang sama tidak boleh dikirim dua kali',
+        message:
+          'Menu yang sama tidak boleh dikirim dua kali',
       })
     }
 
     const trx = await db.transaction()
 
     try {
-      const pelanggan = await Pelanggan.query({ client: trx })
-        .where('id_pelanggan', payload.idPelanggan)
-        .first()
+      const pelanggan =
+        await Pelanggan.query({
+          client: trx,
+        })
+          .where(
+            'id_pelanggan',
+            payload.idPelanggan
+          )
+          .first()
 
       if (!pelanggan) {
         await trx.rollback()
 
         return response.unprocessableEntity({
-          message: 'Pelanggan tidak ditemukan',
+          message:
+            'Pelanggan tidak ditemukan',
         })
       }
 
@@ -71,13 +100,20 @@ export default class PesanansController {
         subTotal: number
       }> = []
 
-      const sortedItems = [...payload.items].sort((a, b) =>
+      const sortedItems = [
+        ...payload.items,
+      ].sort((a, b) =>
         a.idMenu.localeCompare(b.idMenu)
       )
 
       for (const item of sortedItems) {
-        const menu = await Menu.query({ client: trx })
-          .where('id_menu', item.idMenu)
+        const menu = await Menu.query({
+          client: trx,
+        })
+          .where(
+            'id_menu',
+            item.idMenu
+          )
           .forUpdate()
           .first()
 
@@ -85,26 +121,36 @@ export default class PesanansController {
           await trx.rollback()
 
           return response.unprocessableEntity({
-            message: `Menu ${item.idMenu} tidak ditemukan`,
+            message:
+              `Menu ${item.idMenu} tidak ditemukan`,
           })
         }
 
-        if (menu.stok < item.jumlah) {
+        if (
+          menu.stok < item.jumlah
+        ) {
           await trx.rollback()
 
           return response.conflict({
-            message: `Stok ${menu.namaMenu} tidak mencukupi`,
+            message:
+              `Stok ${menu.namaMenu} tidak mencukupi`,
           })
         }
 
-        const harga = Number(menu.harga)
-        const subTotal = harga * item.jumlah
+        const harga =
+          Number(menu.harga)
+
+        const subTotal =
+          harga * item.jumlah
 
         totalHarga += subTotal
         totalPesanan += item.jumlah
 
         menu.stok -= item.jumlah
-        await menu.useTransaction(trx).save()
+
+        await menu
+          .useTransaction(trx)
+          .save()
 
         details.push({
           idDetail: randomUUID(),
@@ -116,28 +162,43 @@ export default class PesanansController {
         })
       }
 
-      const pesanan = await Pesanan.create(
-        {
-          idPesanan,
-          idPelanggan: payload.idPelanggan,
-          tanggalPesanan: DateTime.now(),
-          totalPesanan,
-          totalHarga,
-          catatan: payload.catatan ?? null,
-        },
-        { client: trx }
-      )
+      const pesanan =
+        await Pesanan.create(
+          {
+            idPesanan,
+            idPelanggan:
+              payload.idPelanggan,
 
-      await DetailPesanan.createMany(details, {
-        client: trx,
-      })
+            tanggalPesanan:
+              DateTime.now(),
+
+            totalPesanan,
+            totalHarga,
+
+            catatan:
+              payload.catatan ?? null,
+          },
+          {
+            client: trx,
+          }
+        )
+
+      await DetailPesanan.createMany(
+        details,
+        {
+          client: trx,
+        }
+      )
 
       await trx.commit()
 
-      await pesanan.load('detailPesanans')
+      await pesanan.load(
+        'detailPesanans'
+      )
 
       return response.created({
-        message: 'Pesanan berhasil dibuat',
+        message:
+          'Pesanan berhasil dibuat',
         data: pesanan,
       })
     } catch (error) {
