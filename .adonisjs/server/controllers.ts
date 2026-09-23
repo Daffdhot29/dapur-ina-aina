@@ -4,6 +4,15 @@
  */
 
 export const controllers = {
+  Billings: () => import('#controllers/billings_controller'),
+  Dashboard: () => import('#controllers/dashboard_controller'),
+  DetailPesanans: () => import('#controllers/detail_pesanans_controller'),
+  Kategoris: () => import('#controllers/kategoris_controller'),
+  LaporanPenjualans: () => import('#controllers/laporan_penjualans_controller'),
+  Menus: () => import('#controllers/menus_controller'),
   NewAccount: () => import('#controllers/new_account_controller'),
+  Pelanggans: () => import('#controllers/pelanggans_controller'),
+  Pembayarans: () => import('#controllers/pembayarans_controller'),
+  Pesanans: () => import('#controllers/pesanans_controller'),
   Session: () => import('#controllers/session_controller'),
 }
