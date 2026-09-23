@@ -36,8 +36,10 @@ export type ScannedRoutes = {
     'billings.index': { paramsTuple?: []; params?: {} }
     'billings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'billings.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'laporan_penjualans.export_pdf': { paramsTuple?: []; params?: {} }
     'laporan_penjualans.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard': { paramsTuple?: []; params?: {} }
+    'kasir.dashboard': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'home': { paramsTuple?: []; params?: {} }
@@ -57,8 +59,10 @@ export type ScannedRoutes = {
     'pembayarans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'billings.index': { paramsTuple?: []; params?: {} }
     'billings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'laporan_penjualans.export_pdf': { paramsTuple?: []; params?: {} }
     'laporan_penjualans.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard': { paramsTuple?: []; params?: {} }
+    'kasir.dashboard': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'home': { paramsTuple?: []; params?: {} }
@@ -78,8 +82,10 @@ export type ScannedRoutes = {
     'pembayarans.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'billings.index': { paramsTuple?: []; params?: {} }
     'billings.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'laporan_penjualans.export_pdf': { paramsTuple?: []; params?: {} }
     'laporan_penjualans.index': { paramsTuple?: []; params?: {} }
     'admin.dashboard': { paramsTuple?: []; params?: {} }
+    'kasir.dashboard': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'new_account.store': { paramsTuple?: []; params?: {} }

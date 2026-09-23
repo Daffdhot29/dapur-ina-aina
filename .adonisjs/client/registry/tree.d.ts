@@ -53,9 +53,13 @@ export interface ApiDefinition {
     store: typeof routes['billings.store']
   }
   laporanPenjualans: {
+    exportPdf: typeof routes['laporan_penjualans.export_pdf']
     index: typeof routes['laporan_penjualans.index']
   }
   admin: {
     dashboard: typeof routes['admin.dashboard']
+  }
+  kasir: {
+    dashboard: typeof routes['kasir.dashboard']
   }
 }

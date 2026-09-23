@@ -4,4 +4,8 @@ export default class DashboardController {
   async index({ inertia }: HttpContext) {
     return inertia.render('dashboard', {})
   }
+
+    async kasir({ inertia }: HttpContext) {
+    return inertia.render('kasir/dashboard', {})
+  }
 }

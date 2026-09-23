@@ -391,6 +391,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/billings_controller').default['store']>>>
     }
   }
+  'laporan_penjualans.export_pdf': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/laporan-penjualan/export'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#validators/laporan_penjualan').laporanPenjualanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/laporan_penjualans_controller').default['exportPdf']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/laporan_penjualans_controller').default['exportPdf']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'laporan_penjualans.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/laporan-penjualan'
@@ -413,6 +425,18 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['index']>>>
+    }
+  }
+  'kasir.dashboard': {
+    methods: ["GET","HEAD"]
+    pattern: '/kasir/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['kasir']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#controllers/dashboard_controller').default['kasir']>>>
     }
   }
 }

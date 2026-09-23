@@ -198,6 +198,12 @@ const routes = {
     tokens: [{"old":"/api/pesanans/:id/billing","type":0,"val":"api","end":""},{"old":"/api/pesanans/:id/billing","type":0,"val":"pesanans","end":""},{"old":"/api/pesanans/:id/billing","type":1,"val":"id","end":""},{"old":"/api/pesanans/:id/billing","type":0,"val":"billing","end":""}],
     types: placeholder as Registry['billings.store']['types'],
   },
+  'laporan_penjualans.export_pdf': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/laporan-penjualan/export',
+    tokens: [{"old":"/api/laporan-penjualan/export","type":0,"val":"api","end":""},{"old":"/api/laporan-penjualan/export","type":0,"val":"laporan-penjualan","end":""},{"old":"/api/laporan-penjualan/export","type":0,"val":"export","end":""}],
+    types: placeholder as Registry['laporan_penjualans.export_pdf']['types'],
+  },
   'laporan_penjualans.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/laporan-penjualan',
@@ -209,6 +215,12 @@ const routes = {
     pattern: '/admin/dashboard',
     tokens: [{"old":"/admin/dashboard","type":0,"val":"admin","end":""},{"old":"/admin/dashboard","type":0,"val":"dashboard","end":""}],
     types: placeholder as Registry['admin.dashboard']['types'],
+  },
+  'kasir.dashboard': {
+    methods: ["GET","HEAD"],
+    pattern: '/kasir/dashboard',
+    tokens: [{"old":"/kasir/dashboard","type":0,"val":"kasir","end":""},{"old":"/kasir/dashboard","type":0,"val":"dashboard","end":""}],
+    types: placeholder as Registry['kasir.dashboard']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 
