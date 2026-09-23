@@ -18,12 +18,28 @@ export default class BillingsController {
   }
 
   async show({ params, response }: HttpContext) {
-    const billing = await Billing.findOrFail(params.id)
+  const billing = await Billing.findOrFail(params.id)
 
-    return response.ok({
-      data: billing,
+  const pesanan = await Pesanan.query()
+    .where('id_pesanan', billing.idPesanan)
+    .preload('pelanggan')
+    .preload('detailPesanans', (detailQuery) => {
+      detailQuery.preload('menu')
     })
-  }
+    .firstOrFail()
+
+  const pembayaran = await Pembayaran.query()
+    .where('id_pesanan', billing.idPesanan)
+    .first()
+
+  return response.ok({
+    data: {
+      billing,
+      pesanan,
+      pembayaran,
+    },
+  })
+}
 
   async store({ params, response }: HttpContext) {
     const trx = await db.transaction()
